@@ -19,6 +19,7 @@
 """
 # external lib to use async accesses to the webclipper
 import asks
+from asks import Session
 import logging
 
 __author__ = 'FoxMaSk'
@@ -31,14 +32,18 @@ class JoplinApi:
 
     # joplin webclipper service
     JOPLIN_HOST = ''
+    # API token
+    token = ''
 
-    def __init__(self, **config):
+    def __init__(self, token, **config):
         """
+        :param token: string The API token grabbed from the Joplin config page
         :param config: dict for configuration
         """
         # default value if none are provided when initializing JoplinApi()
         default_host = 'http://127.0.0.1:{}/'.format(config.get('JOPLIN_WEBCLIPPER', 41184))
         self.JOPLIN_HOST = config.get('JOPLIN_HOST', default_host)
+        self.token = token
 
     async def query(self, method, path, **params):
         """
@@ -54,6 +59,10 @@ class JoplinApi:
             raise ValueError('request unexpected: should be \'notes\' or \'folders\' or \'tags\'')
 
         full_path = self.JOPLIN_HOST + path
+
+        # adding the token to the params
+        params['token'] = self.token
+
         res = {}
         if method == 'get':
             res = await asks.get(full_path, params=params)
