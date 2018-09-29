@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-    Joplin Editor API
+    Joplin Editor API - https://joplin.cozic.net/api/
 
     Usage:
     >>> from joplin_api import JoplinApi
@@ -19,7 +19,7 @@
 """
 # external lib to use async accesses to the webclipper
 import asks
-from asks import Session
+
 import logging
 
 __author__ = 'FoxMaSk'
@@ -78,6 +78,17 @@ class JoplinApi:
     # NOTES
     ##############
 
+    async def get_note(self, note_id):
+        """
+        GET /notes/:id
+
+        get that note
+        :param note_id: string
+        :return: res: result of the get
+        """
+        path = f'/notes/{note_id}'
+        return await self.query('get', path, params={})
+
     async def get_notes(self):
         """
         GET /notes
@@ -86,6 +97,16 @@ class JoplinApi:
         :return: res: result of the get
         """
         return await self.query('get', 'notes', params={})
+
+    async def get_notes_tags(self, note_id):
+        """
+        GET /notes/:id/tags
+
+        get all the tags attached to this note
+        :return: res: result of the get
+        """
+        path = f'/notes/{note_id}/tags'
+        return await self.query('get', path, params={})
 
     async def create_note(self, title, body, parent_id, **kwargs):
         """
@@ -118,110 +139,33 @@ class JoplinApi:
         :param kwargs: dict of additional data
         :return: res: json result of the put
         """
-        data = {'id': note_id,
-                'title': title,
+        is_todo = kwargs.get('is_todo', 0)
+        data = {'title': title,
                 'body': body,
                 'parent_id': parent_id,
                 'author': kwargs.get('author', ''),
-                'source_url': kwargs.get('source_url', '')
+                'source_url': kwargs.get('source_url', ''),
+                'is_todo': is_todo
                 }
-        return await self.query('put', 'notes', params=data)
+        if is_todo:
+            todo_due = kwargs.get('todo_due', 0)
+            todo_completed = kwargs.get('todo_completed', 0)
+            data['todo_due'] = todo_due
+            data['todo_completed'] = todo_completed
+
+        path = f'/notes/{note_id}'
+        return await self.query('put', path, params=data)
 
     async def delete_note(self, note_id):
         """
-        DELETE /notes
+        DELETE /notes/:id
 
         Delete a note
         :param note_id: string
         :return: res: json result of the delete
         """
-        data = {'note_id': note_id}
-        return await self.query('delete', 'notes', params=data)
-
-    async def copy_note(self, note_id, parent_id):
-        """
-        PUT /notes
-
-        Copy a note
-        :param note_id: string
-        :param parent_id: string the id of the folder where the copy will go
-        :return: res: json result of the post
-        """
-        data = {'note_id': note_id, 'parent_id': parent_id}
-        return await self.query('put', 'notes', params=data)
-
-    async def move_note(self, note_id, parent_id):
-        """
-        PUT /notes
-
-        Move a note
-        :param note_id: string
-        :param parent_id: string the id of the folder where the note will be moved
-        :return: res: json result of the post
-        """
-        data = {'note_id': note_id, 'parent_id': parent_id}
-        return await self.query('put', 'notes', params=data)
-
-    async def rename_note(self, note_id, title):
-        """
-        PUT /notes
-
-        Rename the note
-        :param note_id: id of the note
-        :param title: string title of the note
-        :return: res: json result of the put
-        """
-        data = {'id': note_id,
-                'title': title}
-        return await self.query('put', 'notes', params=data)
-
-    ##############
-    # TASKS
-    ##############
-
-    async def toggle(self, note_id):
-        """
-        PUT /tasks
-
-        Toggle a note to task or task to note
-        :param note_id: string
-        :return: res: json result of the post
-        """
-        data = {'note_id': note_id}
-        return await self.query('put', 'tasks', params=data)
-
-    async def task_clear(self, note_id):
-        """
-        PUT /tasks
-
-        Clear a task
-        :param note_id: string
-        :return: res: json result of the post
-        """
-        data = {'note_id': note_id}
-        return await self.query('put', 'tasks', params=data)
-
-    async def task_done(self, note_id):
-        """
-        PUT /tasks
-
-        Set a task as done
-        :param note_id: string
-        :return: res: json result of the post
-        """
-        data = {'note_id': note_id}
-        return await self.query('put', 'tasks', params=data)
-
-    async def task_undone(self, note_id):
-        """
-        PUT /tasks
-
-        Undone a task
-        :param note_id: string
-        :return: res: json result of the post
-        """
-        data = {'note_id': note_id}
-        return await self.query('put', 'tasks', params=data)
+        path = f'/notes/{note_id}'
+        return await self.query('delete', path, params={})
 
     ##############
     # FOLDERS
@@ -229,14 +173,14 @@ class JoplinApi:
 
     async def get_folder(self, folder_id):
         """
-        GET /folders
+        GET /folders/:id
 
         get a folder
         :param folder_id: string of the folder id
         :return: res: json result of the get
         """
-        data = {'parent_id': folder_id}
-        return await self.query('get', 'folders', params=data)
+        path = f"/folders/{folder_id}"
+        return await self.query('get', path, params={})
 
     async def get_folders(self):
         """
@@ -246,6 +190,17 @@ class JoplinApi:
         :return: res: json result of the get
         """
         return await self.query('get', 'folders', params={})
+
+    async def get_folders_notes(self, folder_id):
+        """
+        GET /folders/:id/notes
+
+        get the list of all the notes of this folder
+        :param folder_id: string of the folder id
+        :return: res: json result of the get
+        """
+        path = f"/folders/{folder_id}/notes"
+        return await self.query('get', path, params={})
 
     async def create_folder(self, folder, **kwargs):
         """
@@ -260,31 +215,31 @@ class JoplinApi:
                 'parent_id': parent_id}
         return await self.query('post', 'folders', params=data)
 
-    async def update_folder(self, folder_id, folder, **kwargs):
+    async def update_folder(self, folder_id, title, **kwargs):
         """
-        PUT /folders
+        PUT /folders/:id
 
         Edit the folder
         :param folder_id: id of the folder to update
-        :param folder: string name of the folder
+        :param title: string name of the folder
         :return: res: json result of the put
         """
-        parent_id = kwargs.get('folder_id', 0)
-        data = {'id': folder_id,
-                'folder': folder,
+        parent_id = kwargs.get('parent_id', 0)
+        data = {'title': title,
                 'parent_id': parent_id}
-        return await self.query('put', 'folders', params=data)
+        path = f"/folders/{folder_id}"
+        return await self.query('put', path, params=data)
 
-    async def delete_folder(self, parent_id):
+    async def delete_folder(self, folder_id):
         """
         DELETE /folders
 
         delete a folder
-        :param parent_id: string of the folder to delete
+        :param folder_id: string of the folder to delete
         :return: res: json result of the delete
         """
-        data = {'parent_id': parent_id}
-        return await self.query('delete', 'folders', params=data)
+        path = f"/folders/{folder_id}"
+        return await self.query('delete', path, params={})
 
     async def rename_folder(self, folder_id, folder):
         """
@@ -303,16 +258,16 @@ class JoplinApi:
     # TAGS
     ##############
 
-    async def get_tag(self, tag):
+    async def get_tag(self, tag_id):
         """
-        GET /tags
+        GET /tags/:id
 
         get a tag
-        :param tag: name of the tag
+        :param tag_id: string name of the tag
         :return: res: json result of the get
         """
-        data = {'tag': tag}
-        return await self.query('get', 'tags', params=data)
+        path = f"/tags/{tag_id}"
+        return await self.query('get', path, params={})
 
     async def get_tags(self):
         """
@@ -323,39 +278,131 @@ class JoplinApi:
         """
         return await self.query('get', 'tags', params={})
 
-    async def create_tag(self, tag):
+    async def create_tag(self, title):
         """
         POST /tags
 
         Add a new tag
-        :param tag: name of the tag
+        :param title: name of the tag
         :return: res: json result of the post
         """
-        data = {'tag': tag}
-        return await self.query('post', 'folders', params=data)
+        data = {'title': title}
+        return await self.query('post', 'tags', params=data)
 
-    async def update_tag(self, tag, new_tag):
+    async def update_tag(self, tag_id, title):
         """
-        PUT /tags
+        PUT /tags/:id
 
         Edit the tag
-        :param tag: string name of the tag to update
-        :param new_tag: string new name of the tag
+        :param tag_id: string id of the tag to update
+        :param title: string tag name
         :return: res: json result of the put
         """
-        data = {'tag': tag, 'new_tag': new_tag}
-        return await self.query('put', 'tags', params=data)
+        data = {'title': title}
+        path = f"/tags/{tag_id}"
+        return await self.query('put', path, params=data)
 
-    async def delete_tag(self, tag):
+    async def delete_tag(self, tag_id):
         """
-        DELETE /tags
+        DELETE /tags/:id
 
         delete a tag
-        :param tag: string name of the tag to delete
+        :param tag_id: string id of the tag to delete
         :return: res: json result of the delete
         """
-        data = {'tag': tag}
-        return await self.query('delete', 'tags', params=data)
+        path = f"/tags/{tag_id}"
+        return await self.query('delete', path, params={})
+
+    async def get_tags_notes(self, note_id):
+        """
+        GET /tags/:id/notes
+
+        get the list of all the tags for this note
+        :return: res: json result of the get
+        """
+        path = f"/tags/{note_id}/notes"
+        return await self.query('get', path, params={})
+
+    async def create_tags_notes(self, note_id):
+        """
+        GET /tags/:id/notes
+
+        create a tag from a note
+        :return: res: json result of the get
+        """
+        path = f"/tags/{note_id}/notes"
+        return await self.query('get', path, params={})
+
+    async def delete_tags_notes(self, tag_id, note_id):
+        """
+        GET /tags/:id/notes/:note_id
+
+        delete a tag from a given note
+        :param tag_id: string id of the tag to delete from the note
+        :param note_id: string id of the note from which drop the tag
+        :return: res: json result of the delete
+        """
+        path = f"/tags/{tag_id}/notes/{note_id}"
+        return await self.query('get', path, params={})
+
+    ##############
+    # RESOURCES
+    ##############
+
+    async def get_resource(self, resource_id):
+        """
+        GET /resources/:id
+
+        get a resource
+        :param resource_id: string name of the resource
+        :return: res: json result of the get
+        """
+        path = f"/resource_id/{resource_id}"
+        return await self.query('get', path, params={})
+
+    async def get_resources(self):
+        """
+        GET /resources
+
+        get the list of all the resource_id of the joplin profile
+        :return: res: json result of the get
+        """
+        return await self.query('get', 'resources', params={})
+
+    async def create_resource(self, title, **kwargs):
+        """
+        POST /resources
+        @TODO
+        Add a new resource
+        :param title: name of the file
+        :return: res: json result of the post
+        """
+        data = {'title': title}
+        return await self.query('post', 'resources', params=data)
+
+    async def update_resources(self, resource_id, title):
+        """
+        PUT /resources/:id
+
+        Edit the tag
+        :param resource_id: string id of the tag to update
+        :param title: string tag name
+        :return: res: json result of the put
+        """
+        data = {'title': title}
+        path = f"/resources/{resource_id}"
+        return await self.query('put', path, params=data)
+
+    async def delete_resources(self, resource_id):
+        """
+        DELETE /resources/:id
+
+        delete a tag
+        :param resource_id: string id of the tag to delete
+        :return: res: json result of the delete
+        """
+        path = f"/resources/{resource_id}"
+        return await self.query('delete', path, params={})
 
     ###################
     # VERSION OF JOPLIN
