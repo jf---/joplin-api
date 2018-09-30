@@ -8,7 +8,7 @@ from joplin_api import __version__ as version
 
 install_requires = [
     'asks==2.0.0',
-    'curio=0.9',
+    'curio==0.9',
 ]
 
 setup(
