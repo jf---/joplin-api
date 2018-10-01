@@ -5,10 +5,8 @@ from setuptools import setup, find_packages
 
 from joplin_api import __version__ as version
 
-
 install_requires = [
-    'asks==2.0.0',
-    'curio==0.9',
+    'requests',
 ]
 
 setup(
