@@ -74,7 +74,7 @@ class JoplinWebApi(JoplinApi):
         Do a query to the System API
         :param method: the kind of query to do
         :param path: endpoints url to the API eg 'notes' 'tags' 'folders'
-        :param payload: a dict with all the necessary things to query the API
+        :param payload: a dict with all the necessary things to deal with the API
         :return json data
         """
         if method not in ('get', 'post', 'put', 'delete'):
@@ -86,7 +86,7 @@ class JoplinWebApi(JoplinApi):
             raise ValueError(f'request expected: notes, folders, tags, resources, version or ping but not {path}')
 
         full_path = self.JOPLIN_HOST + path
-
+        headers = {'Content-Type': 'application/json'}
         params = {'token':  self.token}
         res = {}
         if method == 'get':
@@ -94,7 +94,7 @@ class JoplinWebApi(JoplinApi):
         elif method == 'post':
             res = requests.post(full_path, json=payload, params=params)
         elif method == 'put':
-            res = requests.patch(full_path, data=payload, params=params)
+            res = requests.put(full_path, data=json.dumps(payload), params=params, headers=headers)
         elif method == 'delete':
             res = requests.delete(full_path, params=params)
 
@@ -151,7 +151,6 @@ class JoplinWebApi(JoplinApi):
                 'author': kwargs.get('author', ''),
                 'source_url': kwargs.get('source_url', '')
                 }
-        print(data)
         return self.query('post', '/notes/', **data)
 
     def update_note(self, note_id, title, body, parent_id, **kwargs):
@@ -397,7 +396,7 @@ class JoplinWebApi(JoplinApi):
     def create_resource(self, title, **kwargs):
         """
         POST /resources
-        @TODO
+
         Add a new resource
         :param title: name of the file
         :return: res: json result of the post
@@ -409,14 +408,25 @@ class JoplinWebApi(JoplinApi):
         """
         PUT /resources/:id
 
-        Edit the tag
+        Edit a resource
         :param resource_id: string id of the tag to update
-        :param title: string tag name
+        :param title: string title
         :return: res: json result of the put
         """
         data = {'title': title}
         path = f'/resources/{resource_id}'
         return self.query('put', path, **data)
+
+    def download_resources(self, resource_id):
+        """
+        GET /resources/:id/file
+
+        Download a file
+        :param resource_id: string id of the tag to update
+        :return: res: json result of the put
+        """
+        path = f'/resources/{resource_id}/file'
+        return self.query('get', path, **{})
 
     def delete_resources(self, resource_id):
         """
