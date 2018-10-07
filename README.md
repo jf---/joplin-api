@@ -11,7 +11,8 @@ The API of [Joplin Editor](https://joplin.cozic.net/) in Python 3.6+
 
 ```
 git clone  https://github.com/foxmask/joplin-api
-pip install requests
+cd joplin-api 
+python setup.py install
 ```
 
 ## Using Joplin API
@@ -31,3 +32,9 @@ pip install requests
 >>> joplin.get_tags() # to get all the tags
 >>> joplin.version() # to get the version of joplin
 ```
+
+## Tests
+
+before starting the Unit Test, you will need to set the Token line 9 of test.py
+
+token = 'the token found on the webclipper config of joplin desktop'

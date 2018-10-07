@@ -18,6 +18,7 @@ setup(
     description="Joplin Editor - API",
     long_description=open('README.md').read(),
     url='https://github.com/foxmask/joplin-api',
+    download_url="https://github.com/foxmask/joplin-api/archive/joplin_api-" + version + ".zip",
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: BSD License',

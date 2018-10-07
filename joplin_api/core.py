@@ -89,6 +89,7 @@ class JoplinWebApi(JoplinApi):
         headers = {'Content-Type': 'application/json'}
         params = {'token':  self.token}
         res = {}
+        logger.info(f'method {method} path {full_path} params {params} payload {payload} headers {headers}')
         if method == 'get':
             res = requests.get(full_path, params=params)
         elif method == 'post':
@@ -97,7 +98,7 @@ class JoplinWebApi(JoplinApi):
             res = requests.put(full_path, data=json.dumps(payload), params=params, headers=headers)
         elif method == 'delete':
             res = requests.delete(full_path, params=params)
-
+        logger.info(f'Response of WebClipper {res}')
         return res
 
     ##############
@@ -237,7 +238,7 @@ class JoplinWebApi(JoplinApi):
         :return: res: json result of the post
         """
         parent_id = kwargs.get('parent_id', 0)
-        data = {'folder': folder, 'parent_id': parent_id}
+        data = {'title': folder, 'parent_id': parent_id}
         return self.query('post', '/folders/', **data)
 
     def update_folder(self, folder_id, title, **kwargs):
