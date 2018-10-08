@@ -143,7 +143,7 @@ class JoplinWebApi(JoplinApi):
         :param title: string
         :param body: string
         :param parent_id: string id of the parent folder
-        :param kwargs: dict of additional data
+        :param kwargs: dict of additional data (eg 'tags')
         :return: res: json result of the post
         """
         data = {'title': title,
@@ -152,6 +152,8 @@ class JoplinWebApi(JoplinApi):
                 'author': kwargs.get('author', ''),
                 'source_url': kwargs.get('source_url', '')
                 }
+        if len(kwargs.get('tags')) > 0:
+            data['tags'] = kwargs.get('tags')
         return self.query('post', '/notes/', **data)
 
     def update_note(self, note_id, title, body, parent_id, **kwargs):
