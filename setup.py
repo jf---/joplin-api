@@ -17,6 +17,7 @@ setup(
     author_email="foxmask at protonmail",
     description="Joplin Editor - API",
     long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',  # This is important!    
     url='https://github.com/foxmask/joplin-api',
     download_url="https://github.com/foxmask/joplin-api/archive/joplin_api-" + version + ".zip",
     classifiers=[
