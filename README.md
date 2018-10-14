@@ -19,7 +19,7 @@ python setup.py install
 
 ```
 >>> from joplin_api import JoplinApi
->>> joplin = JoplinApi('Api', token='the token provided by Joplin in the WebClipper menu:P'))
+>>> joplin = JoplinApi(token='the token provided by Joplin in the WebClipper menu:P'))
 >>> joplin.ping()  # to check if the service is up
 >>> joplin.get_folders() # to get all the folders
 >>> folder_title = 'Default'

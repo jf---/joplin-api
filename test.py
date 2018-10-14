@@ -5,8 +5,8 @@ from joplin_api import JoplinApi
 class TestJoplinApi(unittest.TestCase):
 
     def setUp(self):
-        self.joplin = JoplinApi.factory(api_type='Api',
-                                        token='Open joplin desktop then menu Tools > webclipper ')
+        token = '5fa5a79fdd9feb428297b32b8ebfb92160b95678d6a05b7823df19212046106e89c71e3674df7b8c60ee47c53469cfe3cb4c8b9a174cde5960fabc9186503ae4'
+        self.joplin = JoplinApi(token=token)
 
     def test_create_folder(self):
         folder = 'TEST FOLDER1'
@@ -36,7 +36,8 @@ class TestJoplinApi(unittest.TestCase):
         body = '# title 1\n ## subtitle \n ```python\npython --version\n```'
         self.assertIs(type(body), str)
         kwargs = {'tags': 'tag1, tag2'}
-        res = self.joplin.create_note(title="NOTE TEST", body=body, parent_id=parent_id, **kwargs)
+        res = self.joplin.create_note(title="NOTE TEST", body=body,
+                                      parent_id=parent_id, **kwargs)
         self.assertTrue(res.status_code == 200)
 
     def test_get_notes(self):
@@ -50,7 +51,8 @@ class TestJoplinApi(unittest.TestCase):
         parent_id = data['id']
 
         body = '# title 1\n ## subtitle \n ```python\npython --version\n```'
-        res = self.joplin.create_note(title="NOTE TEST2", body=body, parent_id=parent_id)
+        res = self.joplin.create_note(title="NOTE TEST2", body=body,
+                                      parent_id=parent_id)
         data = res.json()
         note_id = data['id']
 
@@ -63,17 +65,6 @@ class TestJoplinApi(unittest.TestCase):
         res = self.joplin.get_tags()
         self.assertTrue(res.status_code == 200)
         self.assertIsInstance(res.json(), list)
-
-    def test_get_tag(self):
-        title = 'TAG TEST'
-        res = self.joplin.create_tag(title=title)
-        data = res.json()
-        tag_id = data['id']
-
-        self.assertIs(type(tag_id), str)
-        res = self.joplin.get_tag(tag_id)
-        self.assertTrue(res.status_code == 200)
-        self.assertIsInstance(res.json(), dict)
 
 
 if __name__ == '__main__':
