@@ -157,7 +157,8 @@ class JoplinApi:
                 'parent_id': parent_id,
                 'author': kwargs.get('author', ''),
                 'source_url': kwargs.get('source_url', ''),
-                'is_todo': is_todo
+                'is_todo': is_todo,
+                'tags': kwargs.get('tags', ''),
                 }
         if is_todo:
             todo_due = kwargs.get('todo_due', 0)

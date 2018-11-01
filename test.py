@@ -39,6 +39,18 @@ class TestJoplinApi(unittest.TestCase):
         res = self.joplin.create_note(title="NOTE TEST", body=body,
                                       parent_id=parent_id, **kwargs)
         self.assertTrue(res.status_code == 200)
+        note_id = res.json()['id']
+
+        body = '# title 1\n ## subtitle \n ```python\npython --version\n```'
+        self.assertIs(type(body), str)
+        kwargs = {'tags': 'tag1, tag2, tag11'}
+        res = self.joplin.update_note(note_id=note_id,
+                                      body=body,
+                                      title="NOTE TEST",
+                                      parent_id=parent_id,
+                                      **kwargs)
+        self.assertTrue(res.status_code == 200)
+
 
     def test_get_notes(self):
         res = self.joplin.get_notes()
