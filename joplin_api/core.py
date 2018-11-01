@@ -133,11 +133,10 @@ class JoplinApi:
                 'body': body,
                 'parent_id': parent_id,
                 'author': kwargs.get('author', ''),
-                'source_url': kwargs.get('source_url', '')
+                'source_url': kwargs.get('source_url', ''),
+                'tags': kwargs.get('tags', ''),
+                'is_todo': kwargs.get('is_todo', '')
                 }
-        tags = kwargs.get('tags', '')
-        if len(tags) > 0:
-            data['tags'] = tags
         return self.query('post', '/notes/', **data)
 
     def update_note(self, note_id, title, body, parent_id, **kwargs):
