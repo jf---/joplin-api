@@ -12,7 +12,7 @@ The API of [Joplin Editor](https://joplin.cozic.net/) in Python 3.6+
 ```
 git clone  https://github.com/foxmask/joplin-api
 cd joplin-api 
-python setup.py install
+pip install -e .
 ```
 
 ## Using Joplin API
