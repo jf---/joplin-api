@@ -68,7 +68,7 @@ class JoplinApi:
 
         full_path = self.JOPLIN_HOST + path
         headers = {'Content-Type': 'application/json'}
-        params = {'token':  self.token}
+        params = {'token': self.token}
         res = {}
         logger.info(f'method {method} path {full_path} params {params} '
                     f'payload {payload} headers {headers}')
