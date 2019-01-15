@@ -51,7 +51,6 @@ class TestJoplinApi(unittest.TestCase):
                                       **kwargs)
         self.assertTrue(res.status_code == 200)
 
-
     def test_get_notes(self):
         res = self.joplin.get_notes()
         self.assertTrue(res.status_code == 200)

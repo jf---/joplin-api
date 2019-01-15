@@ -59,14 +59,13 @@ class JoplinApi:
         if method not in ('get', 'post', 'put', 'delete'):
             raise ValueError('method expected: get, post, put, delete')
 
-        endpoints = ['notes', 'folders', 'tags',
-                     'resources', 'version', 'ping']
+        endpoints = ['/notes/', '/folders/', '/tags/', '/resources/', '/ping/']
 
-        if path not in endpoints:
+        if not any(f"{endpoint}" in path for endpoint in endpoints):
             raise ValueError(f'request expected: notes, folders, tags, '
                              f'resources, version or ping but not {path}')
 
-        full_path = self.JOPLIN_HOST + '/' + path
+        full_path = self.JOPLIN_HOST + path
         headers = {'Content-Type': 'application/json'}
         params = {'token': self.token}
         res = {}
@@ -426,18 +425,6 @@ class JoplinApi:
         path = f'/resources/{resource_id}'
         return self.query('delete', path, **{})
 
-    ###################
-    # VERSION OF JOPLIN
-    ###################
-    def version(self):
-        """
-        GET /version
-
-        get the version of Joplin
-        :return: res: json result of the request
-        """
-        return self.query('get', '/version/', **{})
-
     ####################
     # PING
     ####################
@@ -448,7 +435,7 @@ class JoplinApi:
         get the status of the JoplinWebClipper service
         :return: res: json result of the request
         """
-        res = self.query('get', 'ping', **{})
+        res = self.query('get', '/ping/', **{})
         if res.text != 'JoplinClipperServer':
             raise ConnectionError('WebClipper unavailable. '
                                   'Check "Tools > Webclipper options" '
