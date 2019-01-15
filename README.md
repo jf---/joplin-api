@@ -30,7 +30,6 @@ pip install -e .
 >>> joplin.create_note(note_title, note_body, folder['id'])
 >>> joplin.get_notes() # to get all the notes
 >>> joplin.get_tags() # to get all the tags
->>> joplin.version() # to get the version of joplin
 ```
 
 ## Tests
