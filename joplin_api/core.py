@@ -62,11 +62,11 @@ class JoplinApi:
         endpoints = ['notes', 'folders', 'tags',
                      'resources', 'version', 'ping']
 
-        if not any(f"/{endpoint}/" in path for endpoint in endpoints):
+        if path not in endpoints:
             raise ValueError(f'request expected: notes, folders, tags, '
                              f'resources, version or ping but not {path}')
 
-        full_path = self.JOPLIN_HOST + path
+        full_path = self.JOPLIN_HOST + '/' + path
         headers = {'Content-Type': 'application/json'}
         params = {'token': self.token}
         res = {}
