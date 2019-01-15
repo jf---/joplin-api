@@ -6,5 +6,5 @@
 
 from .core import JoplinApi
 
-VERSION = (1, 2, 1)  # PEP 386
-__version__ = ".".join([str(x) for x in VERSION])
+from pkg_resources import get_distribution
+__version__ = get_distribution('joplin_api').version
