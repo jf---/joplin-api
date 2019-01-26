@@ -378,29 +378,46 @@ class JoplinApi:
         """
         return self.query('get', 'resources', **{})
 
-    def create_resource(self, title, **kwargs):
+    def create_resource(self, file, **props):
         """
         POST /resources
 
         Add a new resource
-        :param title: name of the file
+        :param file: string, name of the file
+        :param props: dict
         :return: res: json result of the post
         """
-        data = {'title': title}
+        properties = {}
+        # title of the resource
+        if 'title' in props:
+            properties['title'] = props['title']
+        # mime of the resource
+        if 'mime' in props:
+            properties['mime'] = props['mime']
+
+        data = {'filename': file, 'props': properties}
+
         return self.query('post', '/resources/', **data)
 
-    def update_resources(self, resource_id, title):
+    def update_resources(self, resource_id, **props):
         """
         PUT /resources/:id
 
         Edit a resource
         :param resource_id: string id of the tag to update
-        :param title: string title
+        :param props: dict
         :return: res: json result of the put
         """
-        data = {'title': title}
+        properties = {}
+        # title of the resource
+        if 'title' in props:
+            properties['title'] = props['title']
+        # mime of the resource
+        if 'mime' in props:
+            properties['mime'] = props['mime']
+
         path = f'/resources/{resource_id}'
-        return self.query('put', path, **data)
+        return self.query('put', path, **properties)
 
     def download_resources(self, resource_id):
         """
