@@ -24,10 +24,11 @@ pip install -e .
 >>> joplin.get_folders() # to get all the folders
 >>> folder_title = 'Default'
 >>> folder = joplin.create_folder(folder_title) # to create a folder
+>>> folder_id = folder.json()['id']
 >>> # to create a new note
 >>> note_title = 'My title'
 >>> note_body = '# My Title ## My Subtitle my body'
->>> joplin.create_note(note_title, note_body, folder['id'])
+>>> joplin.create_note(note_title, note_body, folder_id)
 >>> joplin.get_notes() # to get all the notes
 >>> joplin.get_tags() # to get all the tags
 ```
