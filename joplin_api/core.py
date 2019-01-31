@@ -345,7 +345,7 @@ class JoplinApi:
 
     def delete_tags_notes(self, tag_id, note_id):
         """
-        GET /tags/:id/notes/:note_id
+        DELETE /tags/:id/notes/:note_id
 
         delete a tag from a given note
         :param tag_id: string id of the tag to delete from the note

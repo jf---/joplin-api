@@ -13,6 +13,17 @@ class TestJoplinApi(unittest.TestCase):
         self.assertIs(type(folder), str)
         res = self.joplin.create_folder(folder=folder)
         self.assertTrue(res.status_code == 200)
+        # drop the folder creating for testing purpose
+        self.joplin.delete_folder(res.json()['id'])
+
+    def test_delete_folder(self):
+        folder = 'TEST FOLDER1 TO DELETE'
+        self.assertIs(type(folder), str)
+        res = self.joplin.create_folder(folder=folder)
+        self.assertTrue(res.status_code == 200)
+
+        res = self.joplin.delete_folder(res.json()['id'])
+        self.assertTrue(res.status_code == 200)
 
     def test_get_folders(self):
         res = self.joplin.get_folders()
@@ -26,6 +37,8 @@ class TestJoplinApi(unittest.TestCase):
         res = self.joplin.get_folder(parent_id)
         self.assertTrue(res.status_code == 200)
         self.assertIsInstance(res.json(), dict)
+        # drop the folder creating for testing purpose
+        self.joplin.delete_folder(res.json()['id'])
 
     def test_create_note(self):
         res = self.joplin.create_folder(folder='MY FOLDER3')
@@ -51,6 +64,16 @@ class TestJoplinApi(unittest.TestCase):
                                       **kwargs)
         self.assertTrue(res.status_code == 200)
 
+        # drop the testing data
+        tags_to_delete = self.joplin.get_notes_tags(note_id)
+        print(tags_to_delete.json())
+        for line in tags_to_delete.json():
+            self.joplin.delete_tags_notes(line['id'], note_id)
+
+        self.joplin.delete_note(note_id)
+
+        self.joplin.delete_folder(parent_id)
+
     def test_get_notes(self):
         res = self.joplin.get_notes()
         self.assertTrue(res.status_code == 200)
@@ -71,6 +94,10 @@ class TestJoplinApi(unittest.TestCase):
         res = self.joplin.get_note(note_id)
         self.assertTrue(res.status_code == 200)
         self.assertIsInstance(res.json(), dict)
+
+        # drop the testing data
+        self.joplin.delete_note(note_id)
+        self.joplin.delete_folder(parent_id)
 
     def test_get_tags(self):
         res = self.joplin.get_tags()
