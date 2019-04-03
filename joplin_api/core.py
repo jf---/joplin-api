@@ -322,14 +322,14 @@ class JoplinApi:
         path = f'/tags/{tag_id}'
         return self.query('delete', path, **{})
 
-    def get_tags_notes(self, note_id):
+    def get_tags_notes(self, tag_id):
         """
         GET /tags/:id/notes
 
-        get the list of all the tags for this note
+        Gets all the notes with this tag.
         :return: res: json result of the get
         """
-        path = f'/tags/{note_id}/notes'
+        path = f'/tags/{tag_id}/notes'
         return self.query('get', path, **{})
 
     def create_tags_notes(self, note_id, tag):
