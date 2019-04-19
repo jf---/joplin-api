@@ -1,6 +1,6 @@
 # Joplin Api
 
-The API of [Joplin Editor](https://joplin.cozic.net/) in Python 3.6+
+The API of [Joplin Editor](https://joplinapp.org/) in Python 3.6+
 
 ## requirements
 
