@@ -1,11 +1,11 @@
 # Joplin Api
 
-The API of [Joplin Editor](https://joplin.cozic.net/) in Python 3.6+
+The API of [Joplin Editor](https://joplinapp.org/) in Python 3.6+
 
 ## requirements
 
 * python 3.6+
-* [requests](http://docs.python-requests.org/)
+* [requests-async](https://github.com/encode/requests-async)
 
 ## Installation 
 
@@ -35,6 +35,14 @@ pip install -e .
 
 ## Tests
 
-before starting the Unit Test, you will need to set the Token line 9 of test.py
+install pytest by 
+```
+pip install -r requirements-dev.txt
+```
+then, before starting the Unit Test, you will need to set the Token line 10 of tests/conftest.py file
 
-token = 'the token found on the webclipper config of joplin desktop'
+and run
+```bash
+pytest
+``` 
+
