@@ -243,7 +243,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/folders/{folder_id}/notes'
-        return await self.query('get', path, self.folder_fields)
+        return await self.query('get', path, self.note_fields)
 
     async def create_folder(self, folder, **kwargs):
         """
