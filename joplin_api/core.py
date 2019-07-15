@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-    Joplin Editor API - https://joplin.cozic.net/api/
+    Joplin Editor API - https://joplinapp.org/api/
 
     Usage:
     >>> from joplin_api import JoplinApi
@@ -14,7 +14,7 @@
     >>> note_title = 'My title'
     >>> note_body = '# My Title ## My Subtitle my body'
     >>> joplin.create_note(note_title, note_body, folder_id)
-    >>> joplin.get_notes() # to get all the notes
+    >>> joplin.get_notes() # to get all the notes with
     >>> joplin.get_tags() # to get all the tags
 """
 # external lib to use async accesses to the webclipper
@@ -22,12 +22,12 @@ import requests_async as requests
 import json
 import logging
 from logging import getLogger
-logger = getLogger("joplin_api.api")
 
 __author__ = 'FoxMaSk'
 __all__ = ['JoplinApi']
 
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
+logger = getLogger("joplin_api.api")
 
 
 class JoplinApi:
@@ -36,6 +36,26 @@ class JoplinApi:
     JOPLIN_HOST = ''
     # API token
     token = ''
+
+    preview_note_fields = 'id,title,is_todo,todo_completed,parent_id,' \
+                          'updated_time,user_updated_time,user_created_time,encryption_applied'
+
+    note_fields = 'id,parent_id,title, body,' \
+                  'created_time,updated_time,' \
+                  'is_conflict,' \
+                  'latitude,longitude,altitude,' \
+                  'author,source_url,' \
+                  'is_todo,todo_due,todo_completed,' \
+                  'source,source_application,' \
+                  'application_data,' \
+                  'order,user_created_time,user_updated_time,' \
+                  'encryption_cipher_text,encryption_applied'
+                  # ',body_html,base_url,image_data_url,crop_rect'  # noqa
+
+    folder_fields = 'id, title, created_time, updated_time, ' \
+                    'user_created_time, user_updated_time, ' \
+                    'encryption_cipher_text, encryption_applied, ' \
+                    'parent_id'
 
     def __init__(self, token, **config):
         """
@@ -48,11 +68,12 @@ class JoplinApi:
         self.JOPLIN_HOST = config.get('JOPLIN_HOST', default_host)
         self.token = token
 
-    async def query(self, method, path, **payload):
+    async def query(self, method, path, fields='', **payload):
         """
         Do a query to the System API
         :param method: the kind of query to do
         :param path: endpoints url to the API eg 'notes' 'tags' 'folders'
+        :param fields: fields we want to get
         :param payload: dict with all the necessary things to deal with the API
         :return json data
         """
@@ -67,7 +88,8 @@ class JoplinApi:
 
         full_path = self.JOPLIN_HOST + path
         headers = {'Content-Type': 'application/json'}
-        params = {'token': self.token}
+        params = {'token': self.token, 'fields': fields} if fields else {'token': self.token}
+        print(params)
         res = {}
         logger.info(f'method {method} path {full_path} params {params} '
                     f'payload {payload} headers {headers}')
@@ -95,7 +117,17 @@ class JoplinApi:
         :return: res: result of the get
         """
         path = f'/notes/{note_id}'
-        return await self.query('get', path, **{})
+        return await self.query('get', path, self.note_fields)
+
+    async def get_notes_preview(self):
+        """
+        GET /notes
+
+        get the list of all the notes of the joplin profile
+        WITHOUT the BODY ! (default known field are `preview_note_fields` )
+        :return: res: result of the get
+        """
+        return await self.query('get', '/notes/', self.preview_note_fields)
 
     async def get_notes(self):
         """
@@ -104,7 +136,7 @@ class JoplinApi:
         get the list of all the notes of the joplin profile
         :return: res: result of the get
         """
-        return await self.query('get', '/notes/', **{})
+        return await self.query('get', '/notes/', self.note_fields)
 
     async def get_notes_tags(self, note_id):
         """
@@ -114,7 +146,7 @@ class JoplinApi:
         :return: res: result of the get
         """
         path = f'/notes/{note_id}/tags'
-        return await self.query('get', path, **{})
+        return await self.query('get', path, self.note_fields)
 
     async def create_note(self, title, body, parent_id, **kwargs):
         """
@@ -176,7 +208,7 @@ class JoplinApi:
         :return: res: json result of the delete
         """
         path = f'/notes/{note_id}'
-        return await self.query('delete', path, **{})
+        return await self.query('delete', path, self.note_fields)
 
     ##############
     # FOLDERS
@@ -191,7 +223,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/folders/{folder_id}'
-        return await self.query('get', path, **{})
+        return await self.query('get', path, self.folder_fields)
 
     async def get_folders(self):
         """
@@ -200,7 +232,7 @@ class JoplinApi:
         get the list of all the folders of the joplin profile
         :return: res: json result of the get
         """
-        return await self.query('get', '/folders/', **{})
+        return await self.query('get', '/folders/', self.folder_fields)
 
     async def get_folders_notes(self, folder_id):
         """
@@ -211,7 +243,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/folders/{folder_id}/notes'
-        return await self.query('get', path, **{})
+        return await self.query('get', path, self.folder_fields)
 
     async def create_folder(self, folder, **kwargs):
         """
@@ -221,7 +253,7 @@ class JoplinApi:
         :param folder: name of the folder
         :return: res: json result of the post
         """
-        parent_id = kwargs.get('parent_id', 0)
+        parent_id = kwargs.get('parent_id', '')
         data = {'title': folder, 'parent_id': parent_id}
         return await self.query('post', '/folders/', **data)
 
@@ -234,7 +266,7 @@ class JoplinApi:
         :param title: string name of the folder
         :return: res: json result of the put
         """
-        parent_id = kwargs.get('parent_id', 0)
+        parent_id = kwargs.get('parent_id', '')
         data = {'title': title, 'parent_id': parent_id}
         path = f'/folders/{folder_id}'
         return await self.query('put', path, **data)
@@ -248,7 +280,7 @@ class JoplinApi:
         :return: res: json result of the delete
         """
         path = f'/folders/{folder_id}'
-        return await self.query('delete', path, **{})
+        return await self.query('delete', path)
 
     async def rename_folder(self, folder_id, folder):
         """
@@ -275,7 +307,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/tags/{tag_id}'
-        return await self.query('get', path, **{})
+        return await self.query('get', path)
 
     async def get_tags(self):
         """
@@ -284,7 +316,7 @@ class JoplinApi:
         get the list of all the tags of the joplin profile
         :return: res: json result of the get
         """
-        return await self.query('get', '/tags/', **{})
+        return await self.query('get', '/tags/')
 
     async def create_tag(self, title):
         """
@@ -319,7 +351,7 @@ class JoplinApi:
         :return: res: json result of the delete
         """
         path = f'/tags/{tag_id}'
-        return await self.query('delete', path, **{})
+        return await self.query('delete', path)
 
     async def get_tags_notes(self, tag_id):
         """
@@ -329,7 +361,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/tags/{tag_id}/notes'
-        return await self.query('get', path, **{})
+        return await self.query('get', path)
 
     async def create_tags_notes(self, note_id, tag):
         """
@@ -352,7 +384,7 @@ class JoplinApi:
         :return: res: json result of the delete
         """
         path = f'/tags/{tag_id}/notes/{note_id}'
-        return await self.query('delete', path, **{})
+        return await self.query('delete', path)
 
     ##############
     # RESOURCES
@@ -367,7 +399,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/resource_id/{resource_id}'
-        return await self.query('get', path, **{})
+        return await self.query('get', path)
 
     async def get_resources(self):
         """
@@ -376,7 +408,7 @@ class JoplinApi:
         get the list of all the resource_id of the joplin profile
         :return: res: json result of the get
         """
-        return await self.query('get', 'resources', **{})
+        return await self.query('get', 'resources')
 
     async def create_resource(self, file, **props):
         """
@@ -428,7 +460,7 @@ class JoplinApi:
         :return: res: json result of the put
         """
         path = f'/resources/{resource_id}/file'
-        return await self.query('get', path, **{})
+        return await self.query('get', path)
 
     async def delete_resources(self, resource_id):
         """
@@ -439,7 +471,7 @@ class JoplinApi:
         :return: res: json result of the delete
         """
         path = f'/resources/{resource_id}'
-        return await self.query('delete', path, **{})
+        return await self.query('delete', path)
 
     ####################
     # PING
@@ -451,7 +483,7 @@ class JoplinApi:
         get the status of the JoplinWebClipper service
         :return: res: json result of the request
         """
-        res = await self.query('get', '/ping/', **{})
+        res = await self.query('get', '/ping/')
         if res.text != 'JoplinClipperServer':
             raise ConnectionError('WebClipper unavailable. '
                                   'Check "Tools > Webclipper options" '
