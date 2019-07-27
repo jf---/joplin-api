@@ -20,17 +20,22 @@ pip install -e .
 ```
 >>> from joplin_api import JoplinApi
 >>> joplin = JoplinApi(token='the token provided by Joplin in the WebClipper menu:P'))
->>> joplin.ping()  # to check if the service is up
->>> joplin.get_folders() # to get all the folders
+>>> ping = await joplin.ping()  # to check if the service is up
+>>> print(ping.text)
+>>> res = await joplin.get_folders() # to get all the folders
+>>> print(res.json())
 >>> folder_title = 'Default'
->>> folder = joplin.create_folder(folder_title) # to create a folder
->>> folder_id = folder.json()['id']
+>>> res = await joplin.create_folder(folder_title) # to create a folder
+>>> folder_id = res.json()['id']
 >>> # to create a new note
 >>> note_title = 'My title'
 >>> note_body = '# My Title ## My Subtitle my body'
->>> joplin.create_note(note_title, note_body, folder_id)
->>> joplin.get_notes() # to get all the notes
->>> joplin.get_tags() # to get all the tags
+>>> kwargs = {'tags': 'tag1, tag2'}
+>>> res = await joplin.create_note(title=note_title, body=note_body, parent_id=folder_id, **kwargs)
+>>> res = await joplin.get_notes() # to get all the notes
+>>> print(res.json())
+>>> res = await joplin.get_tags() # to get all the tags
+>>> print(res.json())
 ```
 
 ## Tests
