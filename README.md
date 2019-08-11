@@ -17,26 +17,53 @@ pip install -e .
 
 ## Using Joplin API
 
+with python 3.6.x
 ```
->>> from joplin_api import JoplinApi
->>> joplin = JoplinApi(token='the token provided by Joplin in the WebClipper menu:P'))
->>> ping = await joplin.ping()  # to check if the service is up
->>> print(ping.text)
->>> res = await joplin.get_folders() # to get all the folders
->>> print(res.json())
->>> folder_title = 'Default'
->>> res = await joplin.create_folder(folder_title) # to create a folder
->>> folder_id = res.json()['id']
->>> # to create a new note
->>> note_title = 'My title'
->>> note_body = '# My Title ## My Subtitle my body'
->>> kwargs = {'tags': 'tag1, tag2'}
->>> res = await joplin.create_note(title=note_title, body=note_body, parent_id=folder_id, **kwargs)
->>> res = await joplin.get_notes() # to get all the notes
->>> print(res.json())
->>> res = await joplin.get_tags() # to get all the tags
->>> print(res.json())
+import asyncio
+from joplin_api import JoplinApi
+
+
+async def ping_me(joplin):
+    ping = await joplin.ping()
+    return ping
+
+
+async def main():
+    TOKEN = "1blahblubb13db"
+    joplin = JoplinApi(token=TOKEN)
+    res = await ping_me(joplin)
+    print(res.text)
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+    finally:
+        loop.close()
 ```
+
+with python 3.7.x
+
+```
+import asyncio
+from joplin_api import JoplinApi
+
+
+async def ping_me(joplin):
+    ping = await joplin.ping()
+    return ping
+
+
+async def main():
+    TOKEN = "1blahblubb13db"
+    joplin = JoplinApi(token=TOKEN)
+    res = await ping_me(joplin)
+    print(res.text)
+
+asyncio.run(main())
+```
+
+Have a look at `tests/test_folder.py` for more example
 
 ## Tests
 
