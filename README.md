@@ -17,23 +17,7 @@ pip install -e .
 
 ## Using Joplin API
 
-```
->>> from joplin_api import JoplinApi
->>> joplin = JoplinApi(token='the token '))
->>> joplin.ping()  # to check if the service is up
->>> joplin.get_folders() # to get all the folders
->>> folder_title = 'Default'
->>> folder = joplin.create_folder(folder_title) # to create a folder
->>> folder_id = folder.json()['id']
->>> # to create a new note
->>> note_title = 'My title'
->>> note_body = '# My Title ## My Subtitle my body'
->>> joplin.create_note(note_title, note_body, folder_id)
->>> joplin.get_notes() # to get all the notes with
->>> joplin.get_tags() # to get all the tags
-```
-
-Have a look at `tests/test_folder.py` for more example
+Have a look at `tests/test_folder.py` and `test/test_ping.py` 
 
 ## Tests
 
