@@ -1,1 +1,1 @@
-requests-async
+httpx

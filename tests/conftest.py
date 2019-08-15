@@ -7,4 +7,4 @@ def get_token():
     put the token of the Joplin WebClipper config page
     :return:
     """
-    return '5fa5a79fdd9feb428297b32b8ebfb92160b95678d6a05b7823df19212046106e89c71e3674df7b8c60ee47c53469cfe3cb4c8b9a174cde5960fabc9186503ae4'  # noqa
+    return '50d49af448767d1dd47d6c7154cecdce9cbea5baba847329bb6901fb7e6638a85d46c967cc263820cb72548279f6df093d5e212f882c5eddb34eb0abd3fd89b6'  # noqa
