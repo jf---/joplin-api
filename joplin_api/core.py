@@ -89,7 +89,6 @@ class JoplinApi:
         full_path = self.JOPLIN_HOST + path
         headers = {'Content-Type': 'application/json'}
         params = {'token': self.token, 'fields': fields} if fields else {'token': self.token}
-        print(params)
         res = {}
         logger.info(f'method {method} path {full_path} params {params} '
                     f'payload {payload} headers {headers}')
@@ -356,6 +355,16 @@ class JoplinApi:
         path = f'/tags/{tag_id}'
         return await self.query('delete', path)
 
+    async def get_tags_notes_preview(self, tag_id):
+        """
+        GET /tags/:id/notes
+
+        Gets all the notes with this tag.
+        :return: res: json result of the get
+        """
+        path = f'/tags/{tag_id}/notes'
+        return await self.query('get', path, self.preview_note_fields)
+
     async def get_tags_notes(self, tag_id):
         """
         GET /tags/:id/notes
@@ -364,7 +373,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/tags/{tag_id}/notes'
-        return await self.query('get', path)
+        return await self.query('get', path, self.note_fields)
 
     async def create_tags_notes(self, note_id, tag):
         """
