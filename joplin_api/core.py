@@ -22,6 +22,7 @@ import httpx
 import json
 import logging
 from logging import getLogger
+import os
 
 __author__ = 'FoxMaSk'
 __all__ = ['JoplinApi']
@@ -98,7 +99,26 @@ class JoplinApi:
         if method == 'get':
             res = await client.get(full_path, params=params)
         elif method == 'post':
-            res = await client.post(full_path, json=payload, params=params)
+
+            if 'resources' in path:
+                props = payload['props']
+
+                mime = 'multipart/form-data'
+                if 'mime' in props:
+                    mime = props['mime']
+
+                headers = {'Content-Type': mime}
+
+                files = {'data': (payload['filename'], open(payload['resource_file'], 'rb'), mime)}
+
+                res = await client.post(self.JOPLIN_HOST + '/resources',
+                                        files=files,
+                                        data={'props': json.dumps({'title': props['title'],
+                                                                   'filename': payload['filename']})
+                                              },
+                                        params=params)
+            else:
+                res = await client.post(full_path, json=payload, params=params)
         elif method == 'put':
             res = await client.put(full_path, data=json.dumps(payload), params=params, headers=headers)
         elif method == 'delete':
@@ -410,7 +430,7 @@ class JoplinApi:
         :param resource_id: string name of the resource
         :return: res: json result of the get
         """
-        path = f'/resource_id/{resource_id}'
+        path = f'/resources/{resource_id}'
         return await self.query('get', path)
 
     async def get_resources(self):
@@ -420,26 +440,23 @@ class JoplinApi:
         get the list of all the resource_id of the joplin profile
         :return: res: json result of the get
         """
-        return await self.query('get', 'resources')
+        return await self.query('get', '/resources/')
 
-    async def create_resource(self, file, **props):
+    async def create_resource(self, resource_file, **props):
         """
         POST /resources
 
         Add a new resource
-        :param file: string, name of the file
+        :param resource_file: string, name of the resource_file
         :param props: dict
         :return: res: json result of the post
         """
-        properties = {}
-        # title of the resource
-        if 'title' in props:
-            properties['title'] = props['title']
-        # mime of the resource
-        if 'mime' in props:
-            properties['mime'] = props['mime']
+        if 'title' not in props:
+            raise ValueError('`create_resource` requires `title` in `props` property')
 
-        data = {'filename': file, 'props': properties}
+        data = {'filename': os.path.basename(resource_file),
+                'resource_file': resource_file,
+                'props': props}
 
         return await self.query('post', '/resources/', **data)
 
@@ -452,16 +469,11 @@ class JoplinApi:
         :param props: dict
         :return: res: json result of the put
         """
-        properties = {}
-        # title of the resource
-        if 'title' in props:
-            properties['title'] = props['title']
-        # mime of the resource
-        if 'mime' in props:
-            properties['mime'] = props['mime']
+        if 'title' not in props:
+            raise ValueError('`create_resource` requires `title` in `props` property')
 
         path = f'/resources/{resource_id}'
-        return await self.query('put', path, **properties)
+        return await self.query('put', path, **props)
 
     async def download_resources(self, resource_id):
         """
