@@ -1,28 +1,14 @@
 # coding: utf-8
 """
     Joplin Editor API - https://joplinapp.org/api/
-
-    Usage:
-    >>> from joplin_api import JoplinApi
-    >>> joplin = JoplinApi(token='the token '))
-    >>> joplin.ping()  # to check if the service is up
-    >>> joplin.get_folders() # to get all the folders
-    >>> folder_title = 'Default'
-    >>> folder = joplin.create_folder(folder_title) # to create a folder
-    >>> folder_id = folder.json()['id']
-    >>> # to create a new note
-    >>> note_title = 'My title'
-    >>> note_body = '# My Title ## My Subtitle my body'
-    >>> joplin.create_note(note_title, note_body, folder_id)
-    >>> joplin.get_notes() # to get all the notes with
-    >>> joplin.get_tags() # to get all the tags
 """
-# external lib to use async accesses to the webclipper
+# external lib to use async accesses to the joplin webclipper
 import httpx
 import json
 import logging
 from logging import getLogger
 import os
+import re
 
 __author__ = 'FoxMaSk'
 __all__ = ['JoplinApi']
@@ -38,25 +24,19 @@ class JoplinApi:
     # API token
     token = ''
 
-    preview_note_fields = 'id,title,is_todo,todo_completed,parent_id,' \
-                          'updated_time,user_updated_time,user_created_time,encryption_applied'
+    # note properties accessibles for joplin but __only__ in preview mode
+    preview_note_props = 'id,title,is_todo,todo_completed,parent_id, updated_time, ' \
+                         'user_updated_time,user_created_time,encryption_applied'
 
-    note_fields = 'id,parent_id,title, body,' \
-                  'created_time,updated_time,' \
-                  'is_conflict,' \
-                  'latitude,longitude,altitude,' \
-                  'author,source_url,' \
-                  'is_todo,todo_due,todo_completed,' \
-                  'source,source_application,' \
-                  'application_data,' \
-                  'order,user_created_time,user_updated_time,' \
-                  'encryption_cipher_text,encryption_applied'
-                  # ',body_html,base_url,image_data_url,crop_rect'  # noqa
+    # note properties accessibles for joplin
+    note_props = 'id,parent_id,title, body, created_time,updated_time, is_conflict, latitude, longitude,' \
+                 'altitude, author, source_url, is_todo,todo_due, todo_completed, source, source_application, order' \
+                 'application_data, user_created_time, user_updated_time, encryption_cipher_text, encryption_applied'
+                 # ',body_html,base_url,image_data_url,crop_rect'  # noqa
 
-    folder_fields = 'id, title, created_time, updated_time, ' \
-                    'user_created_time, user_updated_time, ' \
-                    'encryption_cipher_text, encryption_applied, ' \
-                    'parent_id'
+    # folder properties accessibles for joplin
+    folder_props = 'id, title, created_time, updated_time, user_created_time, user_updated_time, ' \
+                   'encryption_cipher_text, encryption_applied, parent_id'
 
     def __init__(self, token, **config):
         """
@@ -64,8 +44,7 @@ class JoplinApi:
         :param config: dict for configuration
         """
         # default value if none are provided when initializing JoplinApi()
-        default_host = 'http://127.0.0.1:{}'.format(
-            config.get('JOPLIN_WEBCLIPPER', 41184))
+        default_host = 'http://127.0.0.1:{}'.format(config.get('JOPLIN_WEBCLIPPER', 41184))
         self.JOPLIN_HOST = config.get('JOPLIN_HOST', default_host)
         self.token = token
 
@@ -81,18 +60,17 @@ class JoplinApi:
         if method not in ('get', 'post', 'put', 'delete'):
             raise ValueError('method expected: get, post, put, delete')
 
-        endpoints = ['/notes/', '/folders/', '/tags/', '/resources/', '/ping/']
+        endpoints = ['/notes/', '/folders/', '/tags/', '/resources/', '/ping/', '/search/']
 
         if not any(f"{endpoint}" in path for endpoint in endpoints):
-            raise ValueError(f'request expected: notes, folders, tags, '
-                             f'resources, version or ping but not {path}')
+            msg = f'request expected: notes, folders, tags, resources, search, version or ping but not {path}'
+            raise ValueError(msg)
 
         full_path = self.JOPLIN_HOST + path
         headers = {'Content-Type': 'application/json'}
         params = {'token': self.token, 'fields': fields} if fields else {'token': self.token}
         res = {}
-        logger.info(f'method {method} path {full_path} params {params} '
-                    f'payload {payload} headers {headers}')
+        logger.info(f'method {method} path {full_path} params {params} payload {payload} headers {headers}')
 
         client = httpx.AsyncClient()
 
@@ -139,17 +117,17 @@ class JoplinApi:
         :return: res: result of the get
         """
         path = f'/notes/{note_id}'
-        return await self.query('get', path, self.note_fields)
+        return await self.query('get', path, self.note_props)
 
     async def get_notes_preview(self):
         """
         GET /notes
 
         get the list of all the notes of the joplin profile
-        WITHOUT the BODY ! (default known field are `preview_note_fields` )
+        WITHOUT the BODY ! (default known field are `preview_note_props` )
         :return: res: result of the get
         """
-        return await self.query('get', '/notes/', self.preview_note_fields)
+        return await self.query('get', '/notes/', self.preview_note_props)
 
     async def get_notes(self):
         """
@@ -158,7 +136,7 @@ class JoplinApi:
         get the list of all the notes of the joplin profile
         :return: res: result of the get
         """
-        return await self.query('get', '/notes/', self.note_fields)
+        return await self.query('get', '/notes/', self.note_props)
 
     async def get_notes_tags(self, note_id):
         """
@@ -168,7 +146,7 @@ class JoplinApi:
         :return: res: result of the get
         """
         path = f'/notes/{note_id}/tags'
-        return await self.query('get', path, self.note_fields)
+        return await self.query('get', path, self.note_props)
 
     async def create_note(self, title, body, parent_id, **kwargs):
         """
@@ -230,7 +208,7 @@ class JoplinApi:
         :return: res: json result of the delete
         """
         path = f'/notes/{note_id}'
-        return await self.query('delete', path, self.note_fields)
+        return await self.query('delete', path, self.note_props)
 
     ##############
     # FOLDERS
@@ -245,7 +223,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/folders/{folder_id}'
-        return await self.query('get', path, self.folder_fields)
+        return await self.query('get', path, self.folder_props)
 
     async def get_folders(self):
         """
@@ -254,7 +232,7 @@ class JoplinApi:
         get the list of all the folders of the joplin profile
         :return: res: json result of the get
         """
-        return await self.query('get', '/folders/', self.folder_fields)
+        return await self.query('get', '/folders/', self.folder_props)
 
     async def get_folders_notes(self, folder_id):
         """
@@ -265,7 +243,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/folders/{folder_id}/notes'
-        return await self.query('get', path, self.note_fields)
+        return await self.query('get', path, self.note_props)
 
     async def create_folder(self, folder, **kwargs):
         """
@@ -383,7 +361,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/tags/{tag_id}/notes'
-        return await self.query('get', path, self.preview_note_fields)
+        return await self.query('get', path, self.preview_note_props)
 
     async def get_tags_notes(self, tag_id):
         """
@@ -393,7 +371,7 @@ class JoplinApi:
         :return: res: json result of the get
         """
         path = f'/tags/{tag_id}/notes'
-        return await self.query('get', path, self.note_fields)
+        return await self.query('get', path, self.note_props)
 
     async def create_tags_notes(self, note_id, tag):
         """
@@ -509,7 +487,39 @@ class JoplinApi:
         """
         res = await self.query('get', '/ping/')
         if res.text != 'JoplinClipperServer':
-            raise ConnectionError('WebClipper unavailable. '
-                                  'Check "Tools > Webclipper options" '
-                                  'if the service is enable')
+            raise ConnectionError('WebClipper unavailable. See "Tools > Webclipper options" if the service is enable')
+        return res
+
+    ####################
+    # SEARCH
+    ####################
+    async def search(self, query, *field):
+        """
+        Call GET /search?query=YOUR_QUERY to search for notes.
+        This end-point supports the field parameter which is recommended to use
+        so that you only get the data that you need.
+
+        The query syntax is as described in the main documentation: https://joplinapp.org/#searching
+
+        :param query string
+        :param field, 'title' or 'body' or nothing
+        :return: res: json result of the request
+        """
+        words = []
+        # exact match
+        if query.startswith('"') and query.endswith('"'):
+            words[0] = query.replace('"', '').replace('"', '')
+        # '*' wildcard use case
+        elif query.endswith('*'):
+            words[0] = query
+        # if space in query
+        elif ' ' in query:
+            # replace multiple space by one if any
+            new_query = re.sub(' +', ' ', query)
+            words = new_query.split(' ')
+        else:
+            words[0] = query
+        # if a field is specified, just filter with this one, otherwise use both
+        qs = {field: words} if field else {'body': words, 'title': words}
+        res = await self.query('get', '/search/', **qs)
         return res
