@@ -30,7 +30,7 @@ class JoplinApi:
 
     # note properties accessibles for joplin
     note_props = 'id,parent_id,title, body, created_time,updated_time, is_conflict, latitude, longitude,' \
-                 'altitude, author, source_url, is_todo,todo_due, todo_completed, source, source_application, order' \
+                 'altitude, author, source_url, is_todo,todo_due, todo_completed, source, source_application, order,' \
                  'application_data, user_created_time, user_updated_time, encryption_cipher_text, encryption_applied'
                  # ',body_html,base_url,image_data_url,crop_rect'  # noqa
 
@@ -167,6 +167,10 @@ class JoplinApi:
                 'tags': kwargs.get('tags', ''),
                 'is_todo': kwargs.get('is_todo', '')
                 }
+        # an ID has been set to create a note
+        if 'id' in kwargs and re.match('[a-z0-9]{32}', kwargs['id']):
+            data['id'] = kwargs['id']
+
         return await self.query('post', '/notes/', **data)
 
     async def update_note(self, note_id, title, body, parent_id, **kwargs):

@@ -1,4 +1,5 @@
 import pytest
+import re
 from joplin_api import JoplinApi
 
 
@@ -64,7 +65,9 @@ async def test_create_note(get_token):
     # 2 - create a note with tag
     body = '# title 1\n ## subtitle \n ```python\npython --version\n```'
     assert type(body) is str
-    kwargs = {'tags': 'tag1, tag2'}
+    kwargs = {'tags': 'tag1, tag2', 'id': '00a87474082744c1a8515da6aa5792d2'}
+    assert 'id' in kwargs
+    assert re.match('[a-z0-9]{32}', kwargs['id'])
     res = await joplin.create_note(title="NOTE TEST", body=body,
                                    parent_id=parent_id, **kwargs)
     assert res.status_code == 200
