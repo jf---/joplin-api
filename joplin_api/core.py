@@ -100,7 +100,6 @@ class JoplinApi:
                                               },
                                         params=params)
             else:
-                print(payload)
                 res = await client.post(full_path, json=payload, params=params)
         elif method == 'put':
             res = await client.put(full_path, data=json.dumps(payload), params=params, headers=headers)
@@ -180,7 +179,7 @@ class JoplinApi:
                 'author': kwargs.get('author', ''),
                 'source_url': kwargs.get('source_url', ''),
                 'tags': kwargs.get('tags', ''),
-                'is_todo': kwargs.get('is_todo', ''),
+                'is_todo': kwargs.get('is_todo', '')
                 }
         # an ID has been set to create a note
         if 'id' in kwargs and re.match('[a-z0-9]{32}', kwargs['id']):
