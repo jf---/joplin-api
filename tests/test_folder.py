@@ -68,10 +68,17 @@ async def test_create_note(get_token):
     kwargs = {'tags': 'tag1, tag2', 'id': '00a87474082744c1a8515da6aa5792d2'}
     assert 'id' in kwargs
     assert re.match('[a-z0-9]{32}', kwargs['id'])
+    # let's set a user created time
+    timestamp = 1545730073
+    kwargs['user_created_time'] = timestamp
     res = await joplin.create_note(title="NOTE TEST", body=body,
                                    parent_id=parent_id, **kwargs)
     assert res.status_code == 200
     note_id = res.json()['id']
+
+    note_user_created_time = res.json()['user_created_time']
+    assert note_user_created_time == timestamp
+
     """
     # 3 - update a note with tag
     body = '# title 1\n ## subtitle \n ```python\npython --version\n```'
